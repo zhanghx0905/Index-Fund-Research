@@ -31,6 +31,7 @@ END = datetime.now(timezone.utc)
 TRADING_DAYS = 252
 LEVERAGE_GRID = np.round(np.arange(0.0, 5.0001, 0.05), 2)
 DD_LIMITS = [0.60, 0.70, 0.80]
+DEFAULT_ANNUAL_FEE = 0.009
 
 TOKENS = {
     "ink": "#1F2430",
@@ -53,6 +54,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--write-tables", action="store_true", help="Write CSV result tables under outputs/.")
     parser.add_argument("--max-leverage", type=float, default=5.0, help="Maximum leverage to evaluate.")
     parser.add_argument("--step", type=float, default=0.05, help="Leverage grid step.")
+    parser.add_argument("--annual-fee", type=float, default=DEFAULT_ANNUAL_FEE, help="Annual fee drag deducted daily, e.g. 0.009 for 0.9%.")
     return parser.parse_args()
 
 
@@ -107,11 +109,35 @@ def max_drawdown(nav: pd.Series) -> tuple[float, pd.Timestamp, pd.Timestamp]:
     return float(dd.min()), peak, trough
 
 
-def simulate(asset_name: str, asset: pd.DataFrame, rates: pd.DataFrame, grid: np.ndarray) -> tuple[pd.DataFrame, pd.DataFrame]:
+def baseline_stats(asset_name: str, asset: pd.DataFrame) -> dict:
+    df = asset[["date", "price"]].sort_values("date").copy()
+    returns = df["price"].pct_change()
+    valid = df.loc[returns.notna(), ["date"]].copy()
+    valid["return"] = returns.loc[returns.notna()].to_numpy()
+    nav = (1 + valid["return"]).cumprod()
+    years = (valid["date"].iloc[-1] - valid["date"].iloc[0]).days / 365.25
+    high = nav.cummax()
+    dd = nav / high - 1
+    trough_pos = dd.idxmin()
+    peak_pos = nav.loc[:trough_pos].idxmax()
+    return {
+        "asset": asset_name,
+        "start": valid["date"].iloc[0],
+        "end": valid["date"].iloc[-1],
+        "final_multiple": float(nav.iloc[-1]),
+        "cagr": float(nav.iloc[-1] ** (1 / years) - 1),
+        "max_drawdown": float(dd.min()),
+        "peak_date": valid.loc[peak_pos, "date"],
+        "trough_date": valid.loc[trough_pos, "date"],
+    }
+
+
+def simulate(asset_name: str, asset: pd.DataFrame, rates: pd.DataFrame, grid: np.ndarray, annual_fee: float) -> tuple[pd.DataFrame, pd.DataFrame]:
     df = asset[["date", "price"]].merge(rates[["date", "irx_pct"]], on="date", how="left").sort_values("date")
     df["irx_pct"] = df["irx_pct"].ffill().bfill()
     df["asset_return"] = df["price"].pct_change()
     df["rf_daily"] = (1 + df["irx_pct"] / 100.0) ** (1 / TRADING_DAYS) - 1
+    fee_daily = (1 + annual_fee) ** (1 / TRADING_DAYS) - 1
     df = df.dropna(subset=["asset_return", "rf_daily"]).reset_index(drop=True)
 
     rows = []
@@ -119,7 +145,7 @@ def simulate(asset_name: str, asset: pd.DataFrame, rates: pd.DataFrame, grid: np
     years = (df["date"].iloc[-1] - df["date"].iloc[0]).days / 365.25
 
     for leverage in grid:
-        strategy_return = leverage * df["asset_return"] + (1 - leverage) * df["rf_daily"]
+        strategy_return = leverage * df["asset_return"] + (1 - leverage) * df["rf_daily"] - fee_daily
         ruined_mask = strategy_return <= -1
         ruined = bool(ruined_mask.any())
         if ruined:
@@ -151,6 +177,7 @@ def simulate(asset_name: str, asset: pd.DataFrame, rates: pd.DataFrame, grid: np
             {
                 "asset": asset_name,
                 "leverage": leverage,
+                "annual_fee": annual_fee,
                 "final_multiple": final_multiple,
                 "cagr": cagr,
                 "ann_vol": ann_vol,
@@ -187,7 +214,7 @@ def pick_best(results: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(picks)
 
 
-def plot_results(results: pd.DataFrame) -> Path:
+def plot_results(results: pd.DataFrame, annual_fee: float) -> Path:
     plt.rcParams.update(
         {
             "figure.facecolor": "#FCFCFD",
@@ -210,7 +237,12 @@ def plot_results(results: pd.DataFrame) -> Path:
         axes[0].plot(group["leverage"], group["cagr"], label=asset, color=colors[asset], linewidth=1.6)
         axes[1].plot(group["leverage"], group["max_drawdown"], label=asset, color=colors[asset], linewidth=1.6)
 
-    axes[0].set_title("Historical daily-rebalanced leverage under short-rate financing", loc="left", color=TOKENS["ink"])
+    fee_pct = annual_fee * 100
+    axes[0].set_title(
+        f"Historical daily-rebalanced leverage under short-rate financing and {fee_pct:.1f}% annual fee",
+        loc="left",
+        color=TOKENS["ink"],
+    )
     axes[0].set_ylabel("CAGR")
     axes[0].yaxis.set_major_formatter(mticker.PercentFormatter(1.0))
     axes[0].grid(True, axis="y")
@@ -228,7 +260,7 @@ def plot_results(results: pd.DataFrame) -> Path:
     fig.text(
         0.125,
         0.02,
-        "Model: strategy return = L * index price return + (1 - L) * ^IRX daily cash return. No tax, fees, slippage, spreads, or margin calls.",
+        f"Model: strategy return = L * index price return + (1 - L) * ^IRX daily cash return - {fee_pct:.1f}% annual fee. No tax, slippage, spreads, or margin calls.",
         color=TOKENS["muted"],
         fontsize=8.5,
     )
@@ -249,7 +281,7 @@ def write_report(summary: pd.DataFrame, picks: pd.DataFrame, asset_frames: dict[
     lines = [
         "# Optimal Leverage Under Historical Short Rates",
         "",
-        "This study estimates daily-rebalanced leverage for NDX and SPX using historical index price returns and Yahoo `^IRX` 13-week Treasury bill yield as the cash/financing proxy.",
+        "This study estimates daily-rebalanced leverage for NDX and SPX using historical index price returns, Yahoo `^IRX` 13-week Treasury bill yield as the cash/financing proxy, and a 0.9% annual fee drag.",
         "",
         "## Headline Results",
         "",
@@ -295,7 +327,8 @@ def write_report(summary: pd.DataFrame, picks: pd.DataFrame, asset_frames: dict[
             "",
             "- Data source: Yahoo Finance Chart API for `^NDX`, `^GSPC`, and `^IRX`.",
             "- Rate proxy: `^IRX` close, interpreted as an annualized short Treasury yield and converted to a daily cash return with `(1 + yield) ** (1 / 252) - 1`.",
-            "- Daily leveraged return: `L * index_return + (1 - L) * rf_daily`.",
+            "- Daily leveraged return: `L * index_return + (1 - L) * rf_daily - fee_daily`.",
+            "- Fee assumption: 0.9% annual fee, deducted daily.",
             "- Grid: daily target leverage from 0x to 5x in 0.05x increments.",
             "- Index returns are price-index returns, not total-return indices. This understates SPX relative to a dividend-reinvested implementation and should be upgraded if total-return data is added.",
             "- No taxes, commissions, bid/ask spread, financing spread over Treasury bills, ETF fees, tracking error, or margin liquidation mechanics are modeled.",
@@ -328,30 +361,36 @@ def main() -> None:
     asset_frames = {}
     result_frames = []
     nav_frames = []
+    baseline_rows = []
     for asset_name, symbol in ASSETS.items():
         payload = yahoo_chart(symbol, args.refresh, args.cache_data)
         asset_frames[asset_name] = parse_chart(payload, "price")
+        baseline_rows.append(baseline_stats(asset_name, asset_frames[asset_name]))
 
     rates = parse_chart(yahoo_chart(RATE_SYMBOL, args.refresh, args.cache_data), "irx_pct")[["date", "irx_pct", "close"]]
     rates = rates.dropna(subset=["irx_pct"]).sort_values("date")
 
     for asset_name, frame in asset_frames.items():
-        results, nav = simulate(asset_name, frame, rates, grid)
+        results, nav = simulate(asset_name, frame, rates, grid, args.annual_fee)
         result_frames.append(results)
         nav_frames.append(nav)
 
     results = pd.concat(result_frames, ignore_index=True)
     picks = pick_best(results)
+    baselines = pd.DataFrame(baseline_rows)
 
     if args.write_tables:
         results.to_csv(OUT / "optimal_leverage_grid.csv", index=False)
         picks.to_csv(OUT / "optimal_leverage_picks.csv", index=False)
+        baselines.to_csv(OUT / "baseline_index_returns.csv", index=False)
         pd.concat(nav_frames, axis=1, sort=True).to_csv(OUT / "optimal_leverage_nav_paths.csv")
         rates.to_csv(OUT / "irx_rates_used.csv", index=False)
-    plot_results(results)
+    plot_results(results, args.annual_fee)
 
     display_cols = ["asset", "criterion", "leverage", "cagr", "ann_vol", "max_drawdown", "final_multiple", "ruined"]
     print(picks[display_cols].to_string(index=False))
+    print("\nBaseline 1x index price paths, no fee:")
+    print(baselines[["asset", "start", "end", "final_multiple", "cagr", "max_drawdown"]].to_string(index=False))
     print("Outputs:", OUT)
 
 
