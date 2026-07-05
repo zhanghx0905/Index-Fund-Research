@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TQQQ 与 MNQ 每日三倍路径比较 - B-ADJ 版</title>
+  <style>
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif; color:#1f2430; background:#fbfcfe; line-height:1.58; }
+    main { max-width:1080px; margin:0 auto; padding:36px 22px 56px; }
+    h1 { font-size:30px; margin:0 0 20px; line-height:1.18; }
+    h2 { font-size:20px; margin:32px 0 12px; }
+    p, li { font-size:15px; }
+    .summary { border-left:4px solid #cc6f47; padding:4px 0 4px 16px; margin-bottom:20px; }
+    .summary p { margin:8px 0; }
+    figure { margin:20px 0 26px; background:#fff; border:1px solid #e3e7ef; border-radius:8px; padding:12px; }
+    figure img { width:100%; height:auto; display:block; }
+    figcaption { color:#5f6675; font-size:13px; margin-top:8px; }
+    table { width:100%; border-collapse:collapse; margin:14px 0 22px; background:#fff; border:1px solid #e3e7ef; }
+    th,td { padding:10px 12px; border-bottom:1px solid #e3e7ef; text-align:right; font-size:14px; }
+    th:first-child,td:first-child { text-align:left; }
+    th { background:#f5f7fb; color:#5f6675; }
+    code { background:#f5f7fb; padding:2px 4px; border-radius:4px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>TQQQ 与 MNQ 每日三倍路径比较 - B-ADJ 版</h1>
+  <h2>Executive Summary</h2>
+  <div class="summary">
+    <p><strong>用更干净的 B-ADJ 点数 PnL 后，MNQ 模拟路径仍明显优于 TQQQ。</strong>共同样本为 2011-01-03 到 2026-06-18；TQQQ 最终为 216.10x，MNQ 3x + 55% BIL 为 236.33x，MNQ 3x + 70% BIL 为 244.07x。</p>
+    <p><strong>这版避免了直接用主连百分比收益带来的换月跳点问题。</strong>MNQ 日收益用 <code>3 × ΔB-ADJ close / 非B-ADJ前收</code>，现金部分用 BIL 调整收盘价近似短债收益。</p>
+    <p><strong>差异仍不是无风险套利。</strong>MNQ 70% BIL 与 TQQQ 的日收益相关性为 0.990，年化跟踪误差约 8.6%；它更像自己运营一个期货杠杆账户，而不是购买 TQQQ 产品。</p>
+  </div>
+
+  <h2>结果汇总</h2>
+  <table><thead><tr><th>Metric</th><th>TQQQ</th><th>MNQ 55% BIL</th><th>MNQ 70% BIL</th><th>MNQ no cash</th></tr></thead><tbody>
+<tr><td>Final multiple</td><td>216.10x</td><td>236.33x</td><td>244.07x</td><td>210.01x</td></tr>
+<tr><td>CAGR</td><td>41.6%</td><td>42.4%</td><td>42.7%</td><td>41.3%</td></tr>
+<tr><td>Annualized vol</td><td>61.4%</td><td>62.0%</td><td>62.0%</td><td>62.0%</td></tr>
+<tr><td>Max drawdown</td><td>-81.7%</td><td>-81.3%</td><td>-81.2%</td><td>-81.4%</td></tr>
+<tr><td>Sharpe vs BIL</td><td>0.86</td><td>0.86</td><td>0.87</td><td>0.85</td></tr>
+</tbody></table>
+
+  <h2>长期净值路径</h2>
+  <p>MNQ 路径的主要优势来自三个部分：没有 TQQQ 基金内部融资/互换/费用摩擦，短债现金收益可留在账户里，以及期货路径和 ETF 产品路径的实现方式不同。70% BIL 是更接近你现在讨论的 SGOV/cash 实操思路，55% BIL 是较保守的保证金占用口径。</p>
+  <figure><img src="charts_final/final_growth_paths.png" alt="Growth paths"><figcaption>所有路径从 1 开始，纵轴为对数刻度。</figcaption></figure>
+
+  <h2>相对 TQQQ 的路径差异</h2>
+  <p>MNQ 70% BIL 相对 TQQQ 的平均年化日收益差为 1.2%，但这个差异是路径型的，换月、保证金、现金管理和实际执行都会影响最终结果。</p>
+  <figure><img src="charts_final/final_relative_ratio.png" alt="Relative ratio"><figcaption>比值高于 1 表示 MNQ 模拟路径累计领先 TQQQ。</figcaption></figure>
+
+  <h2>回撤仍然接近产品级灾难风险</h2>
+  <p>MNQ 路径的最大回撤和 TQQQ 同量级。即使收益更高，也不改变 3x Nasdaq 策略在长熊市里可能出现 70%-80% 级回撤的事实。</p>
+  <figure><img src="charts_final/final_drawdowns.png" alt="Drawdowns"><figcaption>每条曲线按自身历史高点计算回撤。</figcaption></figure>
+
+  <h2>近十年年度收益</h2>
+  <table><thead><tr><th>year</th><th>TQQQ</th><th>MNQ 3x + 55% BIL</th><th>MNQ 3x + 70% BIL</th><th>MNQ 3x, no cash</th></tr></thead><tbody>
+<tr><td>2017</td><td>118.1%</td><td>118.2%</td><td>118.4%</td><td>117.3%</td></tr>
+<tr><td>2018</td><td>-19.8%</td><td>-20.3%</td><td>-20.1%</td><td>-21.1%</td></tr>
+<tr><td>2019</td><td>133.8%</td><td>135.0%</td><td>135.7%</td><td>132.5%</td></tr>
+<tr><td>2020</td><td>110.1%</td><td>120.3%</td><td>120.5%</td><td>119.8%</td></tr>
+<tr><td>2021</td><td>83.0%</td><td>84.3%</td><td>84.3%</td><td>84.4%</td></tr>
+<tr><td>2022</td><td>-79.1%</td><td>-78.6%</td><td>-78.6%</td><td>-78.8%</td></tr>
+<tr><td>2023</td><td>198.0%</td><td>197.1%</td><td>199.3%</td><td>189.4%</td></tr>
+<tr><td>2024</td><td>58.3%</td><td>54.6%</td><td>55.8%</td><td>50.3%</td></tr>
+<tr><td>2025</td><td>34.4%</td><td>34.5%</td><td>35.4%</td><td>31.6%</td></tr>
+<tr><td>2026</td><td>57.4%</td><td>60.1%</td><td>60.5%</td><td>58.7%</td></tr>
+</tbody></table>
+
+  <h2>方法说明</h2>
+  <ul>
+    <li>TQQQ 和 BIL 使用 Yahoo 调整收盘价。</li>
+    <li>MNQ 使用 TradingView B-ADJ 与非 B-ADJ 综合文件：B-ADJ 用于点数 PnL，非 B-ADJ 用于真实前收分母。</li>
+    <li>本报告没有扣除 MNQ 佣金、滑点、税务、整数合约误差和 IBKR 实际保证金动态变化。</li>
+    <li>BIL 是短债收益 proxy；实际用 SGOV 或 T-bills 会有轻微差异。</li>
+  </ul>
+</main>
+</body>
+</html>

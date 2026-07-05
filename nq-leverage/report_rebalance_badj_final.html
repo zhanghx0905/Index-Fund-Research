@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MNQ 3x 再平衡频率比较 - B-ADJ 版</title>
+  <style>
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif; color:#1f2430; background:#fbfcfe; line-height:1.58; }
+    main { max-width:1080px; margin:0 auto; padding:36px 22px 56px; }
+    h1 { font-size:30px; margin:0 0 20px; line-height:1.18; }
+    h2 { font-size:20px; margin:32px 0 12px; }
+    p, li { font-size:15px; }
+    .summary { border-left:4px solid #cc6f47; padding:4px 0 4px 16px; margin-bottom:20px; }
+    .summary p { margin:8px 0; }
+    figure { margin:20px 0 26px; background:#fff; border:1px solid #e3e7ef; border-radius:8px; padding:12px; }
+    figure img { width:100%; height:auto; display:block; }
+    figcaption { color:#5f6675; font-size:13px; margin-top:8px; }
+    table { width:100%; border-collapse:collapse; margin:14px 0 22px; background:#fff; border:1px solid #e3e7ef; }
+    th,td { padding:10px 12px; border-bottom:1px solid #e3e7ef; text-align:right; font-size:14px; }
+    th:first-child,td:first-child { text-align:left; }
+    th { background:#f5f7fb; color:#5f6675; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>MNQ 3x 再平衡频率比较 - B-ADJ 版</h1>
+  <h2>Executive Summary</h2>
+  <div class="summary">
+    <p><strong>固定频率里，周平衡是更稳的折中。</strong>共同样本为 2011-01-04 到 2026-06-18。日平衡最终 245.66x，周平衡 321.08x，月平衡 429.13x，TQQQ 为 216.10x。</p>
+    <p><strong>月平衡历史收益最高，但不是免费收益。</strong>月平衡的调仓前杠杆最高到 5.15x，显著高于周平衡的 4.66x；它是在趋势上涨阶段多吃了漂移杠杆，代价是保证金压力和路径风险更高。</p>
+    <p><strong>日平衡最接近“产品化 3x”，但操作最多且波动损耗更完整。</strong>真实账户如果不想每天调仓，周平衡或“每周检查 + 杠杆带宽触发”更合理。</p>
+  </div>
+  <h2>结果汇总</h2>
+  <table><thead><tr><th>Metric</th><th>Daily</th><th>Weekly</th><th>Monthly</th></tr></thead><tbody>
+<tr><td>Final multiple</td><td>245.66x</td><td>321.08x</td><td>429.13x</td></tr>
+<tr><td>CAGR</td><td>42.8%</td><td>45.3%</td><td>48.0%</td></tr>
+<tr><td>Annualized vol</td><td>62.1%</td><td>63.3%</td><td>67.0%</td></tr>
+<tr><td>Max drawdown</td><td>-81.2%</td><td>-80.1%</td><td>-81.0%</td></tr>
+<tr><td>Worst year</td><td>2022.0: -78.6%</td><td>2022.0: -77.3%</td><td>2022.0: -78.3%</td></tr>
+<tr><td>Leverage range</td><td>2.48x - 3.96x</td><td>2.45x - 4.66x</td><td>2.35x - 5.15x</td></tr>
+<tr><td>Rebalances / year</td><td>251.5</td><td>52.7</td><td>12.1</td></tr>
+</tbody></table>
+  <h2>净值路径</h2>
+  <figure><img src="charts_final/rebalance_growth_paths.png" alt="Rebalance growth paths"><figcaption>MNQ 规则均使用 B-ADJ 点数 PnL，并假设 70% BIL 现金收益。</figcaption></figure>
+  <h2>杠杆漂移</h2>
+  <figure><img src="charts_final/rebalance_leverage_drift.png" alt="Leverage drift"><figcaption>调仓前杠杆越高，越可能在真实账户里带来保证金压力和被迫减仓。</figcaption></figure>
+  <h2>实操结论</h2>
+  <ul>
+    <li>如果必须选固定频率：优先选周平衡。</li>
+    <li>如果追求最高历史收益：月平衡更高，但要接受更大的杠杆漂移。</li>
+    <li>如果追求贴近 TQQQ 的每日 3x 产品路径：日平衡最干净，但交易频率过高。</li>
+    <li>对 140k 这类账户，周平衡更适合实际执行；月平衡需要明确上限，比如调仓前杠杆超过 3.5x 或 4.0x 就提前降回 3x。</li>
+  </ul>
+</main>
+</body>
+</html>
