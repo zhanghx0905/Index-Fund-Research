@@ -1,0 +1,15 @@
+{
+  "daily_pnl_checks": 18860,
+  "max_pnl_error_yuan": 1.6530975699424744e-08,
+  "nav_compounding": "passed",
+  "prior_day_contract_availability": "passed",
+  "prior_day_sizing": "passed",
+  "no_backward_roll": "passed",
+  "attribution_identity": "passed",
+  "settlement_reconciliation": "passed in close ledger engine",
+  "ohlc_invalid_rows": 0,
+  "missing_benchmark_dates": {
+    "IC": 0,
+    "IM": 0
+  }
+}
