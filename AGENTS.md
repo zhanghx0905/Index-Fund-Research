@@ -13,6 +13,7 @@
 - `nq-leverage/`: preserves the corrected B-ADJ TQQQ vs MNQ/NQ methodology. Read its local `AGENTS.md` before changing those scripts or conclusions.
 - `qqq-volatility/`: preserves QQQ volatility regime logic. Read its local `AGENTS.md` before changing thresholds or chart outputs.
 - `optimal-leverage-rates/`: studies daily-rebalanced NDX/SPX leverage using historical short-rate financing.
+- `ic-im-roll-backtest/`: preserves the 2026-09-07 IC/IM rolling futures study. Its existing data snapshots were explicitly imported with the source repository for offline reproduction; keep new caches and generated tables local unless requested. Run its scripts from this study directory.
 
 ## Research Standards
 

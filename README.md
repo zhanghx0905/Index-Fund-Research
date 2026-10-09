@@ -4,6 +4,7 @@
 nq-leverage/              # TQQQ vs MNQ/NQ 合成 3x 纳指敞口
 qqq-volatility/           # QQQ 历史波动率状态
 optimal-leverage-rates/   # 历史利率条件下 NDX/SPX 最佳杠杆率
+ic-im-roll-backtest/      # IC / IM 滚贴水策略回测
 ```
 
 ## 1. TQQQ vs MNQ/NQ 杠杆研究
@@ -68,6 +69,14 @@ strategy_return = L * index_return + (1 - L) * rf_daily - fee_daily
 
 重要限制：这里使用的是 NDX/SPX 价格指数，不是总回报指数；这会低估含股息再投资的指数回报。模型已扣除 `0.9%` 年化费率，但没有计入税、滑点、佣金、融资利差、保证金规则变化或强平机制。
 
+## 4. IC / IM 滚贴水策略回测
+
+研究快照为 2026-09-07，使用中金所逐日合约行情和腾讯中证500/1000价格指数。IC 从 2015-04-16、IM 从 2022-07-22 开始记录初始资金，下一交易日开始持仓。主模型按前一日信息决策、次日开盘成交，每日调整到 1 倍目标名义敞口，单边综合成本 1bp，不计现金利息。
+
+近月 IC / IM 的年化收益分别为 `10.81%` / `10.24%`，最大回撤为 `-52.42%` / `-39.41%`。历史超额收益同时伴随接近 1 的股票市场 beta。基准不含分红；历史保证金、开仓限制及真实强平未逐日复原。
+
+详见[研究说明](ic-im-roll-backtest/README.md)、[结论记录](ic-im-roll-backtest/docs/CONCLUSIONS.md)和[完整报告](ic-im-roll-backtest/outputs/回测报告.md)。原仓库历史及离线复现数据已合并到该目录。
+
 ## 复现
 
 安装依赖：
@@ -106,3 +115,14 @@ Set-Location nq-leverage
 python final_tqqq_mnq_badj_analysis.py
 python final_rebalance_badj_analysis.py
 ```
+
+在总仓库根目录运行 IC / IM 离线回测：
+
+```powershell
+Set-Location ic-im-roll-backtest
+python work/backtest.py
+python work/extra_analysis.py
+python work/report.py
+```
+
+如需分享研究包，再运行 `python work/package.py`；生成的 ZIP 不纳入版本管理。

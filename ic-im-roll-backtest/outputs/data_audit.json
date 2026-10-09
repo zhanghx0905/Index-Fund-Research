@@ -1,0 +1,55 @@
+{
+  "zip_count": 138,
+  "csv_files": 2782,
+  "source_dates": 2782,
+  "raw_target_rows": 15096,
+  "duplicate_rows": 0,
+  "quarantined_rows": 0,
+  "errors": [],
+  "coverage": {
+    "IC": {
+      "start": "2015-04-16",
+      "end": "2026-09-07",
+      "days": 2772,
+      "rows": 11088,
+      "contracts": 140,
+      "zero_volume": 0
+    },
+    "IM": {
+      "start": "2022-07-22",
+      "end": "2026-09-07",
+      "days": 1002,
+      "rows": 4008,
+      "contracts": 53,
+      "zero_volume": 0
+    }
+  },
+  "prev_settle_mismatches": 0,
+  "spot_sources": [
+    "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000905%2Cday%2C2015-01-01%2C2020-12-31%2C2000%2Cqfq",
+    "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000905%2Cday%2C2021-01-01%2C2026-09-07%2C2000%2Cqfq",
+    "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000852%2Cday%2C2015-01-01%2C2020-12-31%2C2000%2Cqfq",
+    "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000852%2Cday%2C2021-01-01%2C2026-09-07%2C2000%2Cqfq"
+  ],
+  "spot_coverage": {
+    "sh000852": {
+      "start": "2015-01-05",
+      "end": "2026-09-07",
+      "days": 2839
+    },
+    "sh000905": {
+      "start": "2015-01-05",
+      "end": "2026-09-07",
+      "days": 2839
+    }
+  },
+  "ohlc_invalid_rows": 0,
+  "missing_spot_dates": {
+    "IC": 0,
+    "IM": 0
+  },
+  "missing_futures_vs_spot_calendar": {
+    "IC": 0,
+    "IM": 0
+  }
+}
